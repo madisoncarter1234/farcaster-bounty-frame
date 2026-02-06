@@ -93,6 +93,23 @@ function generateFrameHTML(params: {
 </html>`;
 }
 
+// Helper to wrap text at word boundaries
+function wrapText(text: string, maxLen: number): { line: string; remainder: string } {
+  if (text.length <= maxLen) return { line: text, remainder: '' };
+
+  const wrapped = text.substring(0, maxLen);
+  const lastSpace = wrapped.lastIndexOf(' ');
+
+  if (lastSpace > 0) {
+    return {
+      line: wrapped.substring(0, lastSpace),
+      remainder: text.substring(lastSpace + 1)
+    };
+  }
+
+  return { line: wrapped, remainder: text.substring(maxLen) };
+}
+
 function generateBountyImage(bounty: Bounty | null, index: number, total: number): string {
   if (!bounty) {
     return `<svg width="1200" height="628" xmlns="http://www.w3.org/2000/svg">
@@ -103,6 +120,13 @@ function generateBountyImage(bounty: Bounty | null, index: number, total: number
   }
 
   const reward = (parseFloat(bounty.reward) / 1_000_000).toFixed(2);
+
+  // Smart text wrapping at word boundaries
+  const firstWrap = wrapText(bounty.description, 70);
+  const line1 = firstWrap.line;
+  const secondWrap = wrapText(firstWrap.remainder, 70);
+  const line2 = secondWrap.line + (secondWrap.remainder ? '...' : '');
+
   return `<svg width="1200" height="628" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -115,9 +139,9 @@ function generateBountyImage(bounty: Bounty | null, index: number, total: number
   <text x="1150" y="70" font-family="Arial" font-size="24" fill="#fff" text-anchor="end">${index + 1} / ${total}</text>
   <rect x="50" y="100" width="250" height="80" fill="#fff" rx="10"/>
   <text x="175" y="150" font-family="Arial" font-size="36" fill="#667eea" text-anchor="middle" font-weight="bold">${reward} USDC</text>
-  <text x="50" y="240" font-family="Arial" font-size="42" fill="#fff" font-weight="bold">${bounty.title.substring(0, 40)}</text>
-  <text x="50" y="300" font-family="Arial" font-size="24" fill="#eee">${bounty.description.substring(0, 60)}...</text>
-  <text x="50" y="340" font-family="Arial" font-size="24" fill="#eee">${bounty.description.substring(60, 120)}...</text>
+  <text x="50" y="240" font-family="Arial" font-size="42" fill="#fff" font-weight="bold">${wrapText(bounty.title, 45).line}${wrapText(bounty.title, 45).remainder ? '...' : ''}</text>
+  <text x="50" y="300" font-family="Arial" font-size="24" fill="#eee">${line1}</text>
+  ${line2 ? `<text x="50" y="340" font-family="Arial" font-size="24" fill="#eee">${line2}</text>` : ''}
   <text x="50" y="420" font-family="Arial" font-size="20" fill="#ddd">Tags: ${bounty.tags.slice(0, 4).join(' · ')}</text>
   <text x="50" y="580" font-family="Arial" font-size="18" fill="#ccc">Status: ${bounty.status.toUpperCase()}</text>
   <text x="1150" y="580" font-family="Arial" font-size="18" fill="#ccc" text-anchor="end">bounty.owockibot.xyz</text>
@@ -126,6 +150,7 @@ function generateBountyImage(bounty: Bounty | null, index: number, total: number
 
 Bun.serve({
   port: PORT,
+  hostname: '0.0.0.0',
   async fetch(req) {
     const url = new URL(req.url);
 
