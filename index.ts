@@ -11,10 +11,13 @@ interface Bounty {
   status: string;
 }
 
-async function fetchBounties(status: string = 'open'): Promise<Bounty[]> {
+const ACTIVE_STATUSES = ['open', 'claimed', 'submitted'];
+
+async function fetchBounties(filter?: string): Promise<Bounty[]> {
   const response = await fetch(`${BOUNTY_API}/bounties`);
   const bounties = await response.json() as Bounty[];
-  return bounties.filter(b => b.status === status);
+  if (filter) return bounties.filter(b => b.status === filter);
+  return bounties.filter(b => ACTIVE_STATUSES.includes(b.status));
 }
 
 function generateFrameHTML(params: {
@@ -115,7 +118,7 @@ function generateBountyImage(bounty: Bounty | null, index: number, total: number
     return `<svg width="1200" height="628" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="628" fill="#1a1a2e"/>
   <text x="600" y="280" font-family="Arial" font-size="48" fill="#fff" text-anchor="middle" font-weight="bold">AI Bounty Board</text>
-  <text x="600" y="350" font-family="Arial" font-size="32" fill="#aaa" text-anchor="middle">No open bounties</text>
+  <text x="600" y="350" font-family="Arial" font-size="32" fill="#aaa" text-anchor="middle">No active bounties</text>
 </svg>`;
   }
 
@@ -156,10 +159,10 @@ Bun.serve({
 
     try {
       if (url.pathname === '/') {
-        const bounties = await fetchBounties('open');
+        const bounties = await fetchBounties();
         return new Response(generateFrameHTML({
           title: 'AI Bounty Board',
-          description: `Browse ${bounties.length} open bounties`,
+          description: `Browse ${bounties.length} active bounties`,
           imageUrl: `${BASE_URL}/image/0`,
           buttons: [
             { label: '▶️ Next', action: 'post', target: `${BASE_URL}/action` },
@@ -171,7 +174,7 @@ Bun.serve({
 
       if (url.pathname.startsWith('/image/')) {
         const index = parseInt(url.pathname.split('/')[2] || '0');
-        const bounties = await fetchBounties('open');
+        const bounties = await fetchBounties();
         const bounty = bounties[index] || bounties[0];
         return new Response(generateBountyImage(bounty, index, bounties.length), {
           headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'max-age=10' }
@@ -180,7 +183,7 @@ Bun.serve({
 
       if (url.pathname === '/action' && req.method === 'POST') {
         const body = await req.json() as any;
-        const bounties = await fetchBounties('open');
+        const bounties = await fetchBounties();
         const currentIndex = parseInt(body?.untrustedData?.state || '0');
         const nextIndex = Math.min(currentIndex + 1, bounties.length - 1);
 

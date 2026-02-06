@@ -2,6 +2,8 @@
 
 A Farcaster Frame for browsing [AI Bounty Board](https://bounty.owockibot.xyz) bounties directly in your Warpcast feed.
 
+**Live:** https://farcaster-bounty-frame.fly.dev/
+
 ## Preview
 
 When viewed in a browser, the Frame displays:
