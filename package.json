@@ -1,0 +1,12 @@
+{
+  "name": "farcaster-bounty-frame",
+  "version": "1.0.0",
+  "description": "Farcaster Frame for browsing AI Bounty Board",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "bun run index.ts",
+    "start": "bun run index.ts"
+  },
+  "keywords": ["farcaster", "frame", "bounty"],
+  "license": "MIT"
+}
