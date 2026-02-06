@@ -52,10 +52,43 @@ function generateFrameHTML(params: {
     <meta property="fc:frame:image:aspect_ratio" content="1.91:1" />
     ${postUrl ? `<meta property="fc:frame:post_url" content="${postUrl}" />` : ''}
     ${buttonTags}
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0f0f0f;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container { max-width: 1200px; width: 100%; }
+      h1 { margin-bottom: 10px; }
+      .preview { margin: 20px 0; width: 100%; max-width: 1200px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+      .preview img { width: 100%; height: auto; display: block; }
+      .info { background: #1a1a1a; padding: 20px; border-radius: 10px; margin-top: 20px; }
+      .buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+      .btn { padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; }
+      .btn:hover { background: #764ba2; }
+    </style>
   </head>
   <body>
-    <h1>${title}</h1>
-    <p>${description}</p>
+    <div class="container">
+      <h1>${title}</h1>
+      <p>${description}</p>
+      <div class="preview">
+        <img src="${imageUrl}" alt="Bounty Preview">
+      </div>
+      <div class="info">
+        <h3>🎯 This is a Farcaster Frame</h3>
+        <p>View it properly in Warpcast or test at <a href="https://warpcast.com/~/developers/frames" style="color: #667eea;">Warpcast Playground</a></p>
+        <div class="buttons">
+          ${buttons.map(btn => `<a href="${btn.target || '#'}" class="btn">${btn.label}</a>`).join('')}
+        </div>
+      </div>
+    </div>
   </body>
 </html>`;
 }
